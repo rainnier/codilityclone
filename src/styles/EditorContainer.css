@@ -1,0 +1,56 @@
+.editor-container {
+  display: flex;
+  height: calc(100vh - 60px); /* Adjust based on your header height */
+  background-color: #1e1e1e;
+}
+
+.editor-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-wrapper {
+  flex: 1;
+}
+
+.controls {
+  padding: 1rem;
+  background: #1e1e1e;
+  border-top: 1px solid #333;
+}
+
+.submit-button {
+  background: #0078d4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background: #106ebe;
+}
+
+.output-panel {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1rem;
+  border-top: 1px solid #333;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.output-panel h3 {
+  margin-top: 0;
+  color: #0078d4;
+}
+
+.output-panel pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

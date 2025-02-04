@@ -1,0 +1,9 @@
+com\codeassess\platform\controller\CodeController.class
+com\codeassess\platform\service\TestExecutionService.class
+com\codeassess\platform\model\TestResult.class
+com\codeassess\platform\model\CodeSubmission.class
+com\codeassess\platform\CodeAssessmentApplication.class
+com\codeassess\platform\model\CompilationResult.class
+com\codeassess\platform\service\JavaCompilerService.class
+com\codeassess\platform\service\FileService.class
+com\codeassess\platform\controller\ApiController.class
