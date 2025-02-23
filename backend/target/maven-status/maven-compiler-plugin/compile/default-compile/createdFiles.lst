@@ -1,3 +1,4 @@
+com\codeassess\platform\model\TestCase.class
 com\codeassess\platform\controller\CodeController.class
 com\codeassess\platform\service\TestExecutionService.class
 com\codeassess\platform\model\TestResult.class
