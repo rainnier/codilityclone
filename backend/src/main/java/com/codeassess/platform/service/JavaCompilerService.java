@@ -18,6 +18,24 @@ public class JavaCompilerService {
 
     private static final String SAVE_DIRECTORY = "compiled"; // Directory to save compiled files
 
+    public void clearClass(String className) {
+        File dir = new File(SAVE_DIRECTORY);
+        if (dir.exists() && dir.isDirectory()) {
+            for (File file : dir.listFiles()) {
+                if (file.getName().startsWith(className) && file.getName().endsWith(".class")) {
+                   
+                        if (file.delete()) {
+                            System.out.println("Cleared old class file: " + file.getPath());
+                        } else {
+                            System.out.println("Failed to clear old class file: " + file.getPath());
+                        }
+                        
+                     // Delete existing .class files
+                }
+            }
+        }
+    }
+
     public CompilationResult compileAndRun(CodeSubmission submission) {
         
         CompilationResult result = new CompilationResult();
@@ -37,6 +55,7 @@ public class JavaCompilerService {
             return result;
         }
 
+        System.out.println("code: " + code);
         // Save the submitted code to a file named fileName
         try (PrintWriter writer = new PrintWriter(savePath.toFile())) {
             writer.write(code);
@@ -46,6 +65,7 @@ public class JavaCompilerService {
             return result;
         }
 
+        clearClass(className);
         // Compile the file
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
@@ -56,8 +76,9 @@ public class JavaCompilerService {
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(savePath.toFile());
         
         // Set the compilation options to specify the output directory
+        boolean success = false;
         List<String> options = List.of("-d", outputDirectory, "-classpath", classpath);
-        boolean success = compiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
+        success = compiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
         
         if (!success) {
             System.out.println("Fail compilation for: " + savePath);
@@ -65,6 +86,7 @@ public class JavaCompilerService {
             result.setError("Compilation failed.");
             return result;
         } else {
+            result.setSuccess(true);
             System.out.println("Success compilation for: " + savePath);
         }
 
@@ -73,13 +95,22 @@ public class JavaCompilerService {
             .map(entry -> new TestCase(entry.getKey(), entry.getValue()))
             .collect(Collectors.toList());
 
+        if(success) {
         // Call runChecker to execute the code and run test cases
-        // return runChecker(className, testCases, result, startTime);
-        return runJUnitTests(result, startTime);
+        return runChecker(className, testCases, result, startTime);
+
+        // return runJUnitTests(result, startTime);
+        // return result;
+        } else {
+            return result;
+        }
     }
 
     private CompilationResult runChecker(String className, List<TestCase> testCases, CompilationResult result, long startTime) {
         StringBuilder results = new StringBuilder();
+        results.append("Compilation: " + (result.isSuccess() ? "Success" : "Failed") + "\n");
+        String testerClass = "TesterClass";
+        String methodName = "solution";
 
         for (TestCase testCase : testCases) {
             int input = testCase.getInput();
@@ -91,7 +122,7 @@ public class JavaCompilerService {
             try {
                 // Ensure the compiled directory is included in the classpath
                 String classpath = "compiled;compiled/junit-4.13.2.jar;compiled/hamcrest-2.2.jar;compiled/hamcrest-library-2.2.jar"; // Use the directory where the class is saved
-                ProcessBuilder processBuilder = new ProcessBuilder("java", "-cp", classpath, className, String.valueOf(input));
+                ProcessBuilder processBuilder = new ProcessBuilder("java", "-cp", classpath, testerClass, className, methodName, String.valueOf(input));
                 processBuilder.redirectErrorStream(true);
                 Process process = processBuilder.start();
                 
@@ -100,6 +131,7 @@ public class JavaCompilerService {
                 StringBuilder output = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
+                    System.out.println("line: " + line);
                     output.append(line).append("\n");
                 }
                 
@@ -107,9 +139,9 @@ public class JavaCompilerService {
                 if (exitCode == 0) {
                     int actualOutput = Integer.parseInt(output.toString().trim());
                     if (actualOutput == expectedOutput) {
-                        results.append("Test case with input ").append(input).append(" passed.\n");
+                        results.append("Test case with input: ").append(input).append(" passed.\n");
                     } else {
-                        results.append("Test case with input ").append(input).append(" failed: expected ")
+                        results.append("Test case with input: ").append(input).append(" failed: expected ")
                                .append(expectedOutput).append(", got ").append(actualOutput).append("\n");
                     }
                 } else {
