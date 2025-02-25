@@ -14,7 +14,7 @@ public class Solution {
                     maxGap = Math.max(maxGap, currentGap);
                 }
                 counting = true;
-                currentGap = 0;
+                currentGap = 0
             } else if (counting) {
                 currentGap++;
             }

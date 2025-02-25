@@ -76,14 +76,22 @@ public class JavaCompilerService {
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(savePath.toFile());
         
         // Set the compilation options to specify the output directory
+        // Create a diagnostic listener to capture errors
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
         boolean success = false;
         List<String> options = List.of("-d", outputDirectory, "-classpath", classpath);
-        success = compiler.getTask(null, fileManager, null, options, null, compilationUnits).call();
-        
+        success = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits).call();
         if (!success) {
-            System.out.println("Fail compilation for: " + savePath);
+            StringBuilder errorMessages = new StringBuilder();
+            for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+                errorMessages.append("Error on line ")
+                             .append(diagnostic.getLineNumber())
+                             .append(": ")
+                             .append(diagnostic.getMessage(null))
+                             .append("\n");
+            }
             result.setSuccess(false);
-            result.setError("Compilation failed.");
+            result.setError("Compilation failed:\n" + errorMessages.toString());
             return result;
         } else {
             result.setSuccess(true);
